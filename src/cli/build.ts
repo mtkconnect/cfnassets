@@ -11,6 +11,7 @@ import {
 import { Command } from 'commander';
 import fs from 'fs';
 import { dirname, resolve } from 'path';
+import { esbuildPackageDir } from '../core/esbuild/esbuildPackageDir.js';
 import { rollupPackageDir } from '../core/rollup/rollupPackageDir.js';
 import { zipDir } from '../core/zip/zipDir.js';
 import { getPackagePath } from '../internal/getPackagePath.js';
@@ -26,6 +27,20 @@ interface RollupOptions {
     packagePlatform?: string;
     packageLockPath?: string;
     rollupConfigPath?: string;
+  };
+}
+
+interface EsbuildOptions {
+  type: 'esbuild';
+  options: {
+    entrypoint: string;
+    configPath?: string;
+    ignore?: string[];
+    install?: string[];
+    packageArch?: string;
+    packageFilePath?: string;
+    packagePlatform?: string;
+    packageLockPath?: string;
   };
 }
 
@@ -49,6 +64,19 @@ const decodeOptions = choose(
       packagePlatform: optional(text),
       packageLockPath: optional(text),
       rollupConfigPath: optional(text),
+    }),
+  }),
+  object<EsbuildOptions>({
+    type: is('esbuild'),
+    options: object<EsbuildOptions['options']>({
+      entrypoint: text,
+      configPath: optional(text),
+      ignore: optional(array(text)),
+      install: optional(array(text)),
+      packageArch: optional(text),
+      packageFilePath: optional(text),
+      packagePlatform: optional(text),
+      packageLockPath: optional(text),
     }),
   }),
   object<ContentOptions>({
@@ -118,6 +146,27 @@ export function addBuildCommand(program: Command): void {
                 rollupConfigPath:
                   item.options.rollupConfigPath &&
                   resolve(source, item.options.rollupConfigPath),
+              });
+              break;
+
+            case 'esbuild':
+              await esbuildPackageDir(source, {
+                bundleName: key,
+                entrypoint: item.options.entrypoint,
+                configPath:
+                  item.options.configPath &&
+                  resolve(source, item.options.configPath),
+                ignorePaths: item.options.ignore,
+                installPackages: item.options.install,
+                outputPath: options.outputDir,
+                packageArch: item.options.packageArch,
+                packageFilePath:
+                  item.options.packageFilePath &&
+                  resolve(source, item.options.packageFilePath),
+                packagePlatform: item.options.packagePlatform,
+                packageLockPath:
+                  item.options.packageLockPath &&
+                  resolve(source, item.options.packageLockPath),
               });
               break;
 

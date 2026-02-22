@@ -1,4 +1,6 @@
 // AUTO-GENERATED node ../makeIndex.js
+export * from './core/esbuild/esbuildPackageDir.js';
+export * from './core/esbuild/esbuildPackageEntries.js';
 export * from './core/rollup/makeRollupPackageStream.js';
 export * from './core/rollup/rollupPackageDir.js';
 export * from './core/rollup/rollupPackageEntries.js';
